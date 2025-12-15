@@ -1,5 +1,5 @@
 use rusqlite::Connection;
-use anyhow::{Result,Context};
+use anyhow::{Result,Context,bail};
 
 pub fn init_db() ->Result<()>{
 
@@ -15,21 +15,24 @@ Ok(())
 pub fn add_task(conn:&Connection, title:String)->Result<()>{
 conn.execute("INSERT INTO todos (task) VALUES (?1)",[&title],)
     .with_context(||format!("Failed to insert the task {}",&title))?;
-println!("niamma");
 Ok(())
 }
 
 pub fn update_status(conn:&Connection,id:usize)->Result<()>{
 
-conn.execute("UPDATE todos SET done=1 WHERE id=(?1)",[&id]).with_context(||format!("Failed to update task {}",&id))?; 
-
+let r= conn.execute("UPDATE todos SET done=1 WHERE id=(?1)",[&id]).with_context(||format!("Failed to update task {}",&id))?; 
+if r==0{
+    bail!("No task with id : {}",id);
+}
 Ok(())
 }
 
 
 pub fn del_task(conn:&Connection,id:usize)->Result<()>{
 let r=conn.execute("DELETE FROM todos WHERE id=(?1)",[&id]).with_context(||format!("Failed to delete task {}",&id))?;
-
+if r==0{
+    bail!("No task with id : {}",id );
+}
 Ok(())
 }
 pub fn list_tasks(conn:&Connection)->Result<()>{

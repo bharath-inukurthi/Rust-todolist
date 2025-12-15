@@ -35,20 +35,23 @@ fn main()->Result<()>{
     let cli =Cli::parse();
     match cli.command{
         Commands::Add{task}=>{
-            println!("Adding task {task}");
-            db::add_task(&conn,task)?;
+            db::add_task(&conn,task.clone())?;
+            println!("Added task {task}");
         }
         Commands::List=>{
             db::list_tasks(&conn)?;
-            println!("Listing tasks");
         }
         Commands::Remove{id}=>{
-            db::del_task(&conn,id)?;
-            println!("Removed {id}");
+            match db::del_task(&conn,id){
+                Ok(_)=>println!("Removed {id}"),
+                Err(e)=>println!("{e}"),
+            }
         }
         Commands::Done{id}=>{
-            db::update_status(&conn,id)?;
-            println!("marking {id} as done");
+            match db::update_status(&conn,id){
+                Ok(_)=>println!("marking {id} as done"),
+                Err(e)=>println!("{e}"),
+            }
         }
     }
     Ok(())
